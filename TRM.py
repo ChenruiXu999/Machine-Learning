@@ -199,6 +199,7 @@ best_val_loss = float('inf')
 epochs = 3
 best_model = None
 
+#正式训练
 for epoch in range(1, epochs + 1):
     epoch_start_time = time.time()
     train(model)
@@ -209,13 +210,13 @@ for epoch in range(1, epochs + 1):
     print(f'| end of epoch {epoch:3d} | time: {elapsed:5.2f}s | '
           f'valid loss {val_loss:5.2f} | valid ppl {val_ppl:8.2f}')
     print('-' * 89)
-
+    #选择最好模型
     if val_loss < best_val_loss:
         best_val_loss = val_loss
-        best_model = copy.deepcopy(model)
-
+        best_model = copy.deepcopy(model)#这里没有保存，工程里如果需要可以输出模型
+    #调整lr
     scheduler.step()
-
+#显示模型评估
 test_loss = evaluate(best_model, test_data)
 test_ppl = math.exp(test_loss)
 print('=' * 89)
