@@ -15,13 +15,14 @@ import time
 import math
 from typing import Tuple
 #from pyitcast.transformer import TransformerModel
-
+#其实可以直接加载定义好的模型
 import torch
 from torch import nn, Tensor
 import torch.nn.functional as F
 from torch.nn import TransformerEncoder, TransformerEncoderLayer
 from torch.utils.data import dataset
 
+#这里的模型是简化版的transformer，decoder部分简化成只有全连接层。
 class TransformerModel(nn.Module):
     def __init__(self, ntoken: int, d_model: int, nhead: int, d_hid: int, nlayers: int, dropout: float = 0.5):
         super().__init__()
@@ -50,7 +51,7 @@ class TransformerModel(nn.Module):
         """
         src = self.encoder(src) * math.sqrt(self.d_model)
         src = self.pos_encoder(src)
-        output = self.transformer_encoder(src, src_mask)
+        output = self.transformer_encoder(src, src_mask)#这里为什么会用到mask？
         output = self.decoder(output)
         return output
 
@@ -118,6 +119,7 @@ test_data = batchify(test_data, eval_batch_size)
 bptt = 35
 
 #之后会把train,test,val三个数据集分成批次
+#这里可以得知，数据集的任务是根据当前输入预测下一个词。属于词分类任务。所以在后续定义loss时用的是cross entropy。
 def get_batch(source: Tensor, i: int) -> Tuple[Tensor, Tensor]:
     """
     Args:
