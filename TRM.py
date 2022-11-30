@@ -16,9 +16,6 @@ import math
 from typing import Tuple
 #from pyitcast.transformer import TransformerModel
 
-import math
-from typing import Tuple
-
 import torch
 from torch import nn, Tensor
 import torch.nn.functional as F
@@ -26,18 +23,16 @@ from torch.nn import TransformerEncoder, TransformerEncoderLayer
 from torch.utils.data import dataset
 
 class TransformerModel(nn.Module):
-    def __init__(self, ntoken: int, d_model: int, nhead: int, d_hid: int,
-                 nlayers: int, dropout: float = 0.5):
+    def __init__(self, ntoken: int, d_model: int, nhead: int, d_hid: int, nlayers: int, dropout: float = 0.5):
         super().__init__()
         self.model_type = 'Transformer'
-        self.pos_encoder = PositionalEncoding(d_model, dropout)
-        encoder_layers = TransformerEncoderLayer(d_model, nhead, d_hid, dropout)
-        self.transformer_encoder = TransformerEncoder(encoder_layers, nlayers)
-        self.encoder = nn.Embedding(ntoken, d_model)
+        self.pos_encoder = PositionalEncoding(d_model, dropout)#位置编码
+        encoder_layers = TransformerEncoderLayer(d_model, nhead, d_hid, dropout)#多头attention的encoder
+        self.transformer_encoder = TransformerEncoder(encoder_layers, nlayers)#多个encoder组成整个encoder
+        self.encoder = nn.Embedding(ntoken, d_model)#数据做embedding操作，这个应该也是要训练的？
         self.d_model = d_model
         self.decoder = nn.Linear(d_model, ntoken)
-
-        self.init_weights()
+        self.init_weights()#初始化权重
 
     def init_weights(self) -> None:
         initrange = 0.1
@@ -50,7 +45,6 @@ class TransformerModel(nn.Module):
         Args:
             src: Tensor, shape [seq_len, batch_size]
             src_mask: Tensor, shape [seq_len, seq_len]
-
         Returns:
             output Tensor of shape [seq_len, batch_size, ntoken]
         """
@@ -65,7 +59,6 @@ def generate_square_subsequent_mask(sz: int) -> Tensor:
     return torch.triu(torch.ones(sz, sz) * float('-inf'), diagonal=1)
 
 class PositionalEncoding(nn.Module):
-
     def __init__(self, d_model: int, dropout: float = 0.1, max_len: int = 5000):
         super().__init__()
         self.dropout = nn.Dropout(p=dropout)
@@ -84,6 +77,7 @@ class PositionalEncoding(nn.Module):
         x = x + self.pe[:x.size(0)]
         return self.dropout(x)
 
+#下面是数据的加载与处理
 train_iter = WikiText2(split='train')#yeild,所以应该是iter的效果
 tokenizer = get_tokenizer('basic_english')#基础分词器
 vocab = build_vocab_from_iterator(map(tokenizer, train_iter),specials=["<unk>"])#累积iter的，加工token完成的text
